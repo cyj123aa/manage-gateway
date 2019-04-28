@@ -7,9 +7,9 @@
     <property name="FILE_LOG_PATTERN"
               value="%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%-5level] %logger{100} >> %msg%n"/>
 
-    <property name="gateway" value="gateway"></property>
-    <property name="gatewayInfo" value="gateway_info"></property>
-    <property name="gatewayError" value="gateway_error"></property>
+    <property name="manage_gateway" value="manage_gateway"></property>
+    <property name="manage_gatewayInfo" value="manage_gateway_info"></property>
+    <property name="manage_gatewayError" value="manage_gateway_error"></property>
 
     <!-- 控制台输出日志 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -18,10 +18,10 @@
         </layout>
     </appender>
 
-    <!--gateway服务日志输出规则-->
-    <appender name="gatewayInfoAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!--manage_gateway服务日志输出规则-->
+    <appender name="manage_gatewayInfoAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/${gateway}/${gatewayInfo}.%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/${manage_gateway}/${manage_gatewayInfo}.%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
             <MaxHistory>360</MaxHistory>
             <maxFileSize>200MB</maxFileSize>
         </rollingPolicy>
@@ -39,9 +39,9 @@
             <Pattern>${FILE_LOG_PATTERN}</Pattern>
         </layout>
     </appender>
-    <appender name="gatewayErrorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="manage_gatewayErrorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/${gateway}/${gatewayError}.%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/${manage_gateway}/${manage_gatewayError}.%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
             <MaxHistory>360</MaxHistory>
             <maxFileSize>200MB</maxFileSize>
         </rollingPolicy>
@@ -60,28 +60,28 @@
         </layout>
     </appender>
 
-    <!--gateway服务-->
+    <!--manage_gateway服务-->
     <logger name="com.hoolink" level="INFO" additivity="false">
-        <appender-ref ref="gatewayInfoAppender"/>
-        <appender-ref ref="gatewayErrorAppender"/>
+        <appender-ref ref="manage_gatewayInfoAppender"/>
+        <appender-ref ref="manage_gatewayErrorAppender"/>
         <appender-ref ref="STDOUT"/>
     </logger>
     <!--spring-->
     <logger name="org.springframework" level="INFO" additivity="false">
-        <appender-ref ref="gatewayInfoAppender"/>
-        <appender-ref ref="gatewayErrorAppender"/>
+        <appender-ref ref="manage_gatewayInfoAppender"/>
+        <appender-ref ref="manage_gatewayErrorAppender"/>
         <appender-ref ref="STDOUT"/>
     </logger>
     <!--servicecomb-->
     <logger name="org.apache.servicecomb" level="INFO" additivity="false">
-        <appender-ref ref="gatewayInfoAppender"/>
-        <appender-ref ref="gatewayErrorAppender"/>
+        <appender-ref ref="manage_gatewayInfoAppender"/>
+        <appender-ref ref="manage_gatewayErrorAppender"/>
         <appender-ref ref="STDOUT"/>
     </logger>
     <!--huawei-->
     <logger name="com.huawei.paas.cse" level="INFO" additivity="false">
-        <appender-ref ref="gatewayInfoAppender"/>
-        <appender-ref ref="gatewayErrorAppender"/>
+        <appender-ref ref="manage_gatewayInfoAppender"/>
+        <appender-ref ref="manage_gatewayErrorAppender"/>
         <appender-ref ref="STDOUT"/>
     </logger>
 </configuration>
