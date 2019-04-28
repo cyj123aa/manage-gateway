@@ -1,2 +1,2 @@
-com.manager.gateway.filter.TxIdFilter
-com.manager.gateway.filter.UserLogFilter
+com.hoolink.manage.gateway.filter.TxIdFilter
+com.hoolink.manage.gateway.filter.UserLogFilter

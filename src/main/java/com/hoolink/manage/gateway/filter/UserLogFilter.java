@@ -1,4 +1,4 @@
-package com.manager.gateway.filter;
+package com.hoolink.manage.gateway.filter;
 
 import org.apache.servicecomb.common.rest.filter.HttpServerFilter;
 import org.apache.servicecomb.core.Invocation;

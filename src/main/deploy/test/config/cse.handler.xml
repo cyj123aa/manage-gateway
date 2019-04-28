@@ -1,4 +1,4 @@
 <config>
     <handler id="auth"
-             class="com.manager.gateway.handler.AuthHandler" />
+             class="com.hoolink.manage.gateway.handler.AuthHandler" />
 </config>

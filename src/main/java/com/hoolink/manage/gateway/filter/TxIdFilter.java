@@ -1,4 +1,4 @@
-package com.manager.gateway.filter;
+package com.hoolink.manage.gateway.filter;
 
 import com.hoolink.sdk.constants.ContextConstant;
 import org.apache.servicecomb.common.rest.filter.HttpServerFilter;

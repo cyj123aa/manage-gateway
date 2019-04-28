@@ -1,4 +1,4 @@
-package com.manager.gateway.dispatcher;
+package com.hoolink.manage.gateway.dispatcher;
 
 import com.hoolink.sdk.constants.ContextConstant;
 import com.hoolink.sdk.utils.UUIDUtil;
