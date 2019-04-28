@@ -1,0 +1,3 @@
+<config>
+    <handler id="auth" class="com.manager.gateway.handler.AuthHandler" />
+</config>

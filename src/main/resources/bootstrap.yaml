@@ -1,0 +1,17 @@
+server:
+  port: 9101
+spring:
+  main:
+    web-application-type: none
+  application:
+    name: manager-gateway
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URL:http://192.168.1.29:8888}
+      profile: ${CONFIG_PROFILE:dev}
+      label: ${CONFIG_LABEL:master}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,health
