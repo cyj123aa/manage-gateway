@@ -15,11 +15,11 @@ public class AuthConfig {
         // 白名单列表，白名单配置规则：       微服务名 + "." + SchemaId + "." + 方法名
         passOperations = new HashSet<>();
         // 登录
-        passOperations.add("manager-base.web.userController.login");
+        passOperations.add("manage-base.web.userController.login");
         // 退出
-        passOperations.add("manager-base.web.userController.logout");
+        passOperations.add("manage-base.web.userController.logout");
         // 获取Session，登录时鉴权用
-        passOperations.add("manager-base.userController.getSessionUser");
+        passOperations.add("manage-base.userController.getSessionUser");
     }
 
     public static final Set<String> getPassOperations() {
