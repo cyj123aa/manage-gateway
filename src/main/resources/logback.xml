@@ -7,7 +7,7 @@
     <property name="FILE_LOG_PATTERN"
               value="%date{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%-5level] %logger{100} >> %msg%n"/>
 
-    <property name="manage" value="manage"></property>
+    <property name="manage" value="manage_gateway"></property>
     <property name="manageGatewayInfo" value="manage_gateway_info"></property>
     <property name="manageGatewayError" value="manage_gateway_error"></property>
 
