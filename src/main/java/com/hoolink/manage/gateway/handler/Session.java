@@ -1,4 +1,4 @@
-package com.manager.gateway.handler;
+package com.hoolink.manage.gateway.handler;
 
 
 import com.hoolink.sdk.bo.base.CurrentUserBO;

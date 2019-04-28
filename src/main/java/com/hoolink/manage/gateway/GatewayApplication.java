@@ -1,4 +1,4 @@
-package com.manager.gateway;
+package com.hoolink.manage.gateway;
 
 import org.apache.servicecomb.provider.springmvc.reference.RestTemplateBuilder;
 import org.apache.servicecomb.springboot2.starter.EnableServiceComb;
