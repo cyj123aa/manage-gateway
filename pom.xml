@@ -80,7 +80,7 @@
     </dependencies>
 
     <build>
-        <finalName>hoolink-gateway</finalName>
+        <finalName>manage-gateway</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
