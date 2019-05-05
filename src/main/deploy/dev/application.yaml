@@ -1,6 +1,6 @@
 spring:
   application:
-    name: manager-gateway
+    name: manage-gateway
 
 server:
   port: 9998
