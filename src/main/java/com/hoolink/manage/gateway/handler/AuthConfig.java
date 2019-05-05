@@ -15,11 +15,21 @@ public class AuthConfig {
         // 白名单列表，白名单配置规则：       微服务名 + "." + SchemaId + "." + 方法名
         passOperations = new HashSet<>();
         // 登录
-        passOperations.add("manage-base.web.userController.login");
+        passOperations.add("manage-base.userController.login");
         // 退出
-        passOperations.add("manage-base.web.userController.logout");
+        passOperations.add("manage-base.userController.logout");
         // 获取Session，登录时鉴权用
         passOperations.add("manage-base.userController.getSessionUser");
+        // 忘记密码
+        passOperations.add("manage-base.userController.forgetPassword");
+        // 获取验证码
+        passOperations.add("manage-base.userController.getPhoneCode");
+        // 绑定手机号
+        passOperations.add("manage-base.userController.bindPhone");
+        // 重置密码
+        passOperations.add("manage-base.userController.resetPassword");
+
+
     }
 
     public static final Set<String> getPassOperations() {

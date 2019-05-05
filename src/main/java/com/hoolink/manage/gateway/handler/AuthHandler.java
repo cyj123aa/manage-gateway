@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class AuthHandler implements Handler {
 
-    private Session session = Invoker.createProxy("manager-base", "userController", Session.class);
+    private Session session = Invoker.createProxy("manage-base", "userController", Session.class);
 
     /**
      * token截取后长度
