@@ -47,7 +47,8 @@ public class AuthHandler implements Handler {
             // 这里实现token验证
             String token = invocation.getContext(ContextConstant.TOKEN);
             // 没有token或token长度不对则无权限访问
-            if (token == null || token.length() < TOKEN_LENGTH) {
+//            if (token == null || token.length() < TOKEN_LENGTH) {
+            if (token == null) {
                 asyncResponse.complete(Response.succResp(
                         BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
                 return;
