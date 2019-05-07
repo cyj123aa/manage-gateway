@@ -81,7 +81,7 @@ public class AuthHandler implements Handler {
                     }*/
 
                     //设置全局用户
-                    invocation.addContext(ContextConstant.CURRENT_USER, JSONUtils.toJSONString(currentUser));
+                    invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
                     log.info("CurrentUser:{},Microservice:{},SchemaID:{},OperationName:{}",
                             currentUser.getAccount(),
                             invocation.getMicroserviceName(),
