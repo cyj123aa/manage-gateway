@@ -24,6 +24,8 @@ public class AuthConfig {
         passOperations.add("manage-base.userController.getPhoneCode");
         // 重置密码
         passOperations.add("manage-base.userController.resetPassword");
+        // 绑定手机号
+        passOperations.add("manage-base.userController.bindPhone");
 
 
     }
