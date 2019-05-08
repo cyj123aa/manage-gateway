@@ -16,8 +16,6 @@ public class AuthConfig {
         passOperations = new HashSet<>();
         // 登录
         passOperations.add("manage-base.userController.login");
-        // 退出
-        passOperations.add("manage-base.userController.logout");
         // 获取Session，登录时鉴权用
         passOperations.add("manage-base.userController.getSessionUser");
         // 忘记密码
