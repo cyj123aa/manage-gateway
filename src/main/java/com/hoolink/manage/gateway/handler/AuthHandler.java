@@ -34,7 +34,6 @@ public class AuthHandler implements Handler {
 
     @Override
     public void handle(Invocation invocation, AsyncResponse asyncResponse) throws Exception {
-//        invocation.next(asyncResponse);
         /*
          * 白名单检查，此处没有使用url进行白名单过滤
          * 主要原因是部分后端请求也会进 handler，此时不能直接获取url对应地址
@@ -75,12 +74,6 @@ public class AuthHandler implements Handler {
                     }
 
                     // 请求鉴权
-                   /*if (!checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAuthUrls())) {
-                        asyncResponse.complete(Response.succResp(
-                                BackBOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
-                        return;
-                    }*/
-
                     //设置全局用户
                     invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
                     log.info("CurrentUser:{},Microservice:{},SchemaID:{},OperationName:{}",
