@@ -92,7 +92,7 @@
                 <version>1.2.0</version>
                 <configuration>
                     <serverId>docker-hub</serverId>
-                    <imageName>gateway-dev</imageName>
+                    <imageName>manage-gateway-dev</imageName>
                     <dockerDirectory>${project.basedir}</dockerDirectory>
                     <dockerHost>http://49.4.49.173:2375</dockerHost>
                     <resources>
