@@ -74,6 +74,13 @@ public class AuthHandler implements Handler {
                     }
 
                     // 请求鉴权
+                    log.info("current request path:{}", invocation.getContext(ContextConstant.REQUEST_PATH));
+                    if (!checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAuthUrls())) {
+                    	asyncResponse.complete(Response.succResp(
+	                		  BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
+                    	return;
+                    }
+                    
                     //设置全局用户
                     invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
                     log.info("CurrentUser:{},Microservice:{},SchemaID:{},OperationName:{}",
