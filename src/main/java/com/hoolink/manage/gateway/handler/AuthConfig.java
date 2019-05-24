@@ -27,7 +27,8 @@ public class AuthConfig {
         // 校验手机验证码
         passOperations.add("manage-base.userController.verifyPhoneCode");
 
-
+        // 上传客户资源 (头像等)
+        passOperations.add("hoolink-ability.web.ObsController.uploadCustom");
     }
 
     public static final Set<String> getPassOperations() {
