@@ -75,7 +75,7 @@ public class AuthHandler implements Handler {
 
                     // 请求鉴权
                     log.info("current request path:{}", invocation.getContext(ContextConstant.REQUEST_PATH));
-                    if (!checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAuthUrls())) {
+                    if (!checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAccessUrlSet())) {
                     	asyncResponse.complete(Response.succResp(
 	                		  BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
                     	return;
