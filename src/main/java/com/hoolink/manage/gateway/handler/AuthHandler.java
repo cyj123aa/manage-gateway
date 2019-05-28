@@ -42,7 +42,7 @@ public class AuthHandler implements Handler {
          */
         if (AuthConfig.getPassOperations().contains(invocation.getOperationMeta().getMicroserviceQualifiedName())) {
             invocation.next(asyncResponse);
-        } else {
+        }else{
             // 这里实现token验证
             String token = invocation.getContext(ContextConstant.TOKEN);
             // 没有token或token长度不对则无权限访问
@@ -74,8 +74,8 @@ public class AuthHandler implements Handler {
                     }
 
                     // 请求鉴权
-                    log.info("current request path:{}", invocation.getContext(ContextConstant.REQUEST_PATH));
-                    if (!checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAccessUrlSet())) {
+                    if (!AuthConfig.getPassOperationsWithoutAuth().contains(invocation.getOperationMeta().getMicroserviceQualifiedName()) && !checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAccessUrlSet())) {
+                    	log.info("current request path: {} forbidden", invocation.getContext(ContextConstant.REQUEST_PATH));
                     	asyncResponse.complete(Response.succResp(
 	                		  BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
                     	return;
