@@ -42,6 +42,8 @@ public class AuthConfig {
         passOperationsWithoutAuth.add("manage-base.personalCenterController.getManagerUserInfo");
         //修改密码
         passOperationsWithoutAuth.add("manage-base.userController.updatePassword");
+        //保存头像
+        passOperationsWithoutAuth.add("manage-base.personalCenterController.updateImageId");
     }
 
     public static final Set<String> getPassOperations() {
