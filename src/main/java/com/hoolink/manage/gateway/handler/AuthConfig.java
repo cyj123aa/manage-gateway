@@ -11,6 +11,8 @@ public class AuthConfig {
 
     private static Set<String> passOperations;
 
+    private static Set<String> passOperationsWithoutAuth;
+
     static {
         // 白名单列表，白名单配置规则：       微服务名 + "." + SchemaId + "." + 方法名
         passOperations = new HashSet<>();
@@ -30,10 +32,28 @@ public class AuthConfig {
         passOperations.add("manage-base.roleController.getBaseMenu");
 
 
+        // 文件
+        passOperations.add("hoolink-ability.web.ObsController.uploadCustom");
+
+        // 需要登录但不需要鉴权的接口
+        passOperationsWithoutAuth = new HashSet<>();
+        /**
+         * 个人中心部分
+         */
+
+        //获取基础信息
+        passOperationsWithoutAuth.add("manage-base.personalCenterController.getManagerUserInfo");
+        //修改密码
+        passOperationsWithoutAuth.add("manage-base.userController.updatePassword");
+        //保存头像
+        passOperationsWithoutAuth.add("manage-base.personalCenterController.updateImageId");
     }
 
     public static final Set<String> getPassOperations() {
         return passOperations;
     }
 
+    public static final Set<String> getPassOperationsWithoutAuth() {
+        return passOperationsWithoutAuth;
+    }
 }
