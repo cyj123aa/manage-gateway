@@ -29,9 +29,6 @@ public class AuthConfig {
         // 校验手机验证码
         passOperations.add("manage-base.userController.verifyPhoneCode");
 
-        passOperations.add("manage-base.roleController.getBaseMenu");
-
-
         // 文件
         passOperations.add("hoolink-ability.web.ObsController.uploadCustom");
 
