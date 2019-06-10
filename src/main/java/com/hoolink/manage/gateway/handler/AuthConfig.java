@@ -34,7 +34,6 @@ public class AuthConfig {
 
         // 需要登录但不需要鉴权的接口
         passOperationsWithoutAuth = new HashSet<>();
-
         /**
          * 个人中心部分
          */
@@ -45,6 +44,8 @@ public class AuthConfig {
         passOperationsWithoutAuth.add("manage-base.userController.updatePassword");
         //保存头像
         passOperationsWithoutAuth.add("manage-base.personalCenterController.updateImageId");
+        //绑定手机号
+        passOperationsWithoutAuth.add("manage-base.userController.bindPhone");
     }
 
     public static final Set<String> getPassOperations() {

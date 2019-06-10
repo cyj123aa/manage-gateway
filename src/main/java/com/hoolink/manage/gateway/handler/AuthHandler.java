@@ -42,7 +42,7 @@ public class AuthHandler implements Handler {
          */
         if (AuthConfig.getPassOperations().contains(invocation.getOperationMeta().getMicroserviceQualifiedName())) {
             invocation.next(asyncResponse);
-        } else {
+        }else{
             // 这里实现token验证
             String token = invocation.getContext(ContextConstant.TOKEN);
             // 没有token或token长度不对则无权限访问
