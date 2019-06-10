@@ -74,6 +74,13 @@ public class AuthHandler implements Handler {
                     }
 
                     // 请求鉴权
+                    if (!AuthConfig.getPassOperationsWithoutAuth().contains(invocation.getOperationMeta().getMicroserviceQualifiedName()) && !checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAccessUrlSet())) {
+                    	log.info("current request path: {} forbidden", invocation.getContext(ContextConstant.REQUEST_PATH));
+                    	asyncResponse.complete(Response.succResp(
+	                		  BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
+                    	return;
+                    }
+                    currentUser.setAuthUrls(null);
                     //设置全局用户
                     invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
                     log.info("CurrentUser:{},Microservice:{},SchemaID:{},OperationName:{}",
