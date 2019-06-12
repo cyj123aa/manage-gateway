@@ -31,6 +31,7 @@ public class AuthConfig {
 
         // 文件
         passOperations.add("hoolink-ability.web.ObsController.uploadCustom");
+        passOperations.add("hoolink-ability.web.ObsController.uploadManager");
 
         // 需要登录但不需要鉴权的接口
         passOperationsWithoutAuth = new HashSet<>();
@@ -46,6 +47,8 @@ public class AuthConfig {
         passOperationsWithoutAuth.add("manage-base.personalCenterController.updateImageId");
         //绑定手机号
         passOperationsWithoutAuth.add("manage-base.userController.bindPhone");
+        //用户退出
+        passOperationsWithoutAuth.add("manage-base.userController.logout");
     }
 
     public static final Set<String> getPassOperations() {
