@@ -44,24 +44,26 @@ public class AuthHandler implements Handler {
         if (AuthConfig.getPassOperations().contains(invocation.getOperationMeta().getMicroserviceQualifiedName())) {
             invocation.next(asyncResponse);
         }else{
-            // 这里实现token验证
-            String token = invocation.getContext(ContextConstant.TOKEN);
             //手机端token
             String mobileToken=invocation.getContext(ContextConstant.MOBILE_TOKEN);
+            // 这里实现token验证
+            String token ;
+            if(StringUtils.isNotBlank(mobileToken)){
+                token=invocation.getContext(ContextConstant.MOBILE_TOKEN);
+            }else{
+                token = invocation.getContext(ContextConstant.TOKEN);
+            }
             // 没有token或token长度不对则无权限访问
 //            if (token == null || token.length() < TOKEN_LENGTH) {
-            if (token == null) {
+            if (token == null && mobileToken==null) {
                 asyncResponse.complete(Response.succResp(
                         BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
                 return;
             }
 
             CompletableFuture<CurrentUserBO> userFuture;
-            if(StringUtils.isNotBlank(mobileToken)){
-                userFuture = session.getSessionUser(mobileToken,true);
-            }else{
-                userFuture = session.getSessionUser(token,false);
-            }
+
+            userFuture = session.getSessionUser(token,false);
             userFuture.whenComplete((currentUser, e) -> {
                 if (userFuture.isCompletedExceptionally()) {
                     asyncResponse.complete(Response.succResp(
