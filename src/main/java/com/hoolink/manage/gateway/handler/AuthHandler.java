@@ -8,6 +8,7 @@ import com.hoolink.sdk.utils.JSONUtils;
 import com.hoolink.sdk.vo.BackVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.core.Handler;
 import org.apache.servicecomb.core.Invocation;
 import org.apache.servicecomb.provider.pojo.Invoker;
@@ -45,6 +46,8 @@ public class AuthHandler implements Handler {
         }else{
             // 这里实现token验证
             String token = invocation.getContext(ContextConstant.TOKEN);
+            //手机端token
+            String mobileToken=invocation.getContext(ContextConstant.MOBILE_TOKEN);
             // 没有token或token长度不对则无权限访问
 //            if (token == null || token.length() < TOKEN_LENGTH) {
             if (token == null) {
@@ -53,7 +56,12 @@ public class AuthHandler implements Handler {
                 return;
             }
 
-            CompletableFuture<CurrentUserBO> userFuture = session.getSessionUser(token);
+            CompletableFuture<CurrentUserBO> userFuture;
+            if(StringUtils.isNotBlank(mobileToken)){
+                userFuture = session.getSessionUser(mobileToken,true);
+            }else{
+                userFuture = session.getSessionUser(token,false);
+            }
             userFuture.whenComplete((currentUser, e) -> {
                 if (userFuture.isCompletedExceptionally()) {
                     asyncResponse.complete(Response.succResp(
