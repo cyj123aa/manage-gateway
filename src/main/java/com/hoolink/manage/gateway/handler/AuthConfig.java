@@ -49,6 +49,11 @@ public class AuthConfig {
         passOperationsWithoutAuth.add("manage-base.userController.bindPhone");
         //用户退出
         passOperationsWithoutAuth.add("manage-base.userController.logout");
+        
+        //获取基础信息
+        passOperationsWithoutAuth.add("manage-base.mobile.personalCenterController.getManagerUserInfo");
+        //上传并保存头像
+        passOperationsWithoutAuth.add("manage-base.mobile.personalCenterController.uploadImage");
     }
 
     public static final Set<String> getPassOperations() {
