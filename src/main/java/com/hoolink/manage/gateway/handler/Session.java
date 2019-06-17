@@ -19,5 +19,5 @@ public interface Session {
      * @param token
      * @return
      */
-    CompletableFuture<CurrentUserBO> getSessionUser(String token);
+    CompletableFuture<CurrentUserBO> getSessionUser(String token,boolean isMobile);
 }
