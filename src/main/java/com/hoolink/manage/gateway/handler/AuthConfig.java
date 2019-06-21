@@ -19,6 +19,7 @@ public class AuthConfig {
         // 登录
         passOperations.add("manage-base.userController.login");
         passOperations.add("manage-base.mobileUserController.login");
+        passOperations.add("manage-base.roleController.getBaseMenu");
         // 获取Session，登录时鉴权用
         passOperations.add("manage-base.userController.getSessionUser");
         passOperations.add("manage-base.mobileUserController.getSessionUser");
