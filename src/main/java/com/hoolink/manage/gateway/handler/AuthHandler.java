@@ -8,6 +8,7 @@ import com.hoolink.sdk.utils.JSONUtils;
 import com.hoolink.sdk.vo.BackVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.core.Handler;
 import org.apache.servicecomb.core.Invocation;
 import org.apache.servicecomb.provider.pojo.Invoker;
@@ -43,17 +44,26 @@ public class AuthHandler implements Handler {
         if (AuthConfig.getPassOperations().contains(invocation.getOperationMeta().getMicroserviceQualifiedName())) {
             invocation.next(asyncResponse);
         }else{
+            //手机端token
+            String mobileToken=invocation.getContext(ContextConstant.MOBILE_TOKEN);
             // 这里实现token验证
-            String token = invocation.getContext(ContextConstant.TOKEN);
+            String token ;
+            if(StringUtils.isNotBlank(mobileToken)){
+                token=invocation.getContext(ContextConstant.MOBILE_TOKEN);
+            }else{
+                token = invocation.getContext(ContextConstant.TOKEN);
+            }
             // 没有token或token长度不对则无权限访问
 //            if (token == null || token.length() < TOKEN_LENGTH) {
-            if (token == null) {
+            if (token == null && mobileToken==null) {
                 asyncResponse.complete(Response.succResp(
                         BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
                 return;
             }
 
-            CompletableFuture<CurrentUserBO> userFuture = session.getSessionUser(token);
+            CompletableFuture<CurrentUserBO> userFuture;
+
+            userFuture = session.getSessionUser(token,false);
             userFuture.whenComplete((currentUser, e) -> {
                 if (userFuture.isCompletedExceptionally()) {
                     asyncResponse.complete(Response.succResp(
@@ -80,7 +90,7 @@ public class AuthHandler implements Handler {
 	                		  BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
                     	return;
                     }
-                    
+                    currentUser.setAuthUrls(null);
                     //设置全局用户
                     invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
                     log.info("CurrentUser:{},Microservice:{},SchemaID:{},OperationName:{}",
