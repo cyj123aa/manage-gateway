@@ -66,7 +66,11 @@ public class AuthHandler implements Handler {
             if(StringUtils.isNotBlank(mobileToken)){
                 userFuture = session.getSessionUser(token,true);
             }else{
-                userFuture = session.getSessionUser(token,false);
+                if(StringUtils.isNotBlank(token)) {
+                    userFuture = session.getSessionUser(token, false);
+                }else{
+                    userFuture = session.getSessionUser("", false);
+                }
             }
             userFuture.whenComplete((currentUser, e) -> {
                 if (userFuture.isCompletedExceptionally()) {
