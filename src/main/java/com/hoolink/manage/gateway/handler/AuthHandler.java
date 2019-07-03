@@ -62,8 +62,11 @@ public class AuthHandler implements Handler {
             }
 
             CompletableFuture<CurrentUserBO> userFuture;
-
-            userFuture = session.getSessionUser(token,false);
+            if(StringUtils.isNotBlank(mobileToken)){
+                userFuture = session.getSessionUser(token,true);
+            }else{
+                userFuture = session.getSessionUser(token,false);
+            }
             userFuture.whenComplete((currentUser, e) -> {
                 if (userFuture.isCompletedExceptionally()) {
                     asyncResponse.complete(Response.succResp(
@@ -77,10 +80,18 @@ public class AuthHandler implements Handler {
                         return;
                     }
                     // 异地登录
-                    if (!Objects.equals(token, currentUser.getToken())) {
-                        asyncResponse.complete(Response.succResp(
-                                BackVOUtil.operateError(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
-                        return;
+                    if(StringUtils.isNotBlank(mobileToken)){
+                        if (!Objects.equals(token, currentUser.getMobileToken())) {
+                            asyncResponse.complete(Response.succResp(
+                                    BackVOUtil.operateError(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
+                            return;
+                        }
+                    }else {
+                        if (!Objects.equals(token, currentUser.getToken())) {
+                            asyncResponse.complete(Response.succResp(
+                                    BackVOUtil.operateError(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
+                            return;
+                        }
                     }
 
                     // 请求鉴权
