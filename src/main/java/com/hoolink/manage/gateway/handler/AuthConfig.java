@@ -18,7 +18,7 @@ public class AuthConfig {
         passOperations = new HashSet<>();
         // 登录
 
-        passOperations.add("manage-support.processConfigController.getProcess");
+
         passOperations.add("manage-base.userController.login");
         passOperations.add("manage-base.mobileUserController.login");
         passOperations.add("manage-base.roleController.getBaseMenu");
