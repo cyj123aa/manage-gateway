@@ -45,6 +45,7 @@ public class AuthHandler implements Handler {
      */
     @Override
     public void handle(Invocation invocation, AsyncResponse asyncResponse) throws Exception {
+      log.info("bbbbb={}",invocation.getOperationMeta().getMicroserviceQualifiedName());
         if (AuthConfig.getPassOperations().contains(invocation.getOperationMeta().getMicroserviceQualifiedName())) {
             invocation.next(asyncResponse);
         }else{
