@@ -17,6 +17,8 @@ public class AuthConfig {
         // 白名单列表，白名单配置规则：       微服务名 + "." + SchemaId + "." + 方法名
         passOperations = new HashSet<>();
         // 登录
+
+        passOperations.add("manage-support.processConfigController.getProcess");
         passOperations.add("manage-base.userController.login");
         passOperations.add("manage-base.mobileUserController.login");
         passOperations.add("manage-base.roleController.getBaseMenu");
