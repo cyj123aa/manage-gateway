@@ -8,6 +8,7 @@ import com.hoolink.sdk.utils.JSONUtils;
 import com.hoolink.sdk.vo.BackVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.core.Handler;
 import org.apache.servicecomb.core.Invocation;
 import org.apache.servicecomb.provider.pojo.Invoker;
@@ -32,28 +33,46 @@ public class AuthHandler implements Handler {
      */
     private static final int TOKEN_LENGTH = 64;
 
+
+    /**
+     *      * 白名单检查，此处没有使用url进行白名单过滤
+     *      * 主要原因是部分后端请求也会进 handler，此时不能直接获取url对应地址
+     *      * 实现参考官方文档设计
+     *      https://huaweicse.github.io/cse-java-chassis-doc/featured-topics/develop-microservice-using-cse/authentication.html
+     * @param invocation
+     * @param asyncResponse
+     * @throws Exception
+     */
     @Override
     public void handle(Invocation invocation, AsyncResponse asyncResponse) throws Exception {
-        /*
-         * 白名单检查，此处没有使用url进行白名单过滤
-         * 主要原因是部分后端请求也会进 handler，此时不能直接获取url对应地址
-         * 实现参考官方文档设计
-         * https://huaweicse.github.io/cse-java-chassis-doc/featured-topics/develop-microservice-using-cse/authentication.html
-         */
+
         if (AuthConfig.getPassOperations().contains(invocation.getOperationMeta().getMicroserviceQualifiedName())) {
             invocation.next(asyncResponse);
-        } else {
-            // 这里实现token验证
-            String token = invocation.getContext(ContextConstant.TOKEN);
+        }else{
+            String mobileToken=invocation.getContext(ContextConstant.MOBILE_TOKEN);
+            String token ;
+            if(StringUtils.isNotBlank(mobileToken)){
+                token=invocation.getContext(ContextConstant.MOBILE_TOKEN);
+            }else{
+                token = invocation.getContext(ContextConstant.TOKEN);
+            }
             // 没有token或token长度不对则无权限访问
 //            if (token == null || token.length() < TOKEN_LENGTH) {
-            if (token == null) {
+            if (token == null && mobileToken==null) {
                 asyncResponse.complete(Response.succResp(
                         BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
                 return;
             }
-
-            CompletableFuture<CurrentUserBO> userFuture = session.getSessionUser(token);
+            CompletableFuture<CurrentUserBO> userFuture;
+            if(StringUtils.isNotBlank(mobileToken)){
+                userFuture = session.getSessionUser(token,true);
+            }else{
+                if(StringUtils.isNotBlank(token)) {
+                    userFuture = session.getSessionUser(token, false);
+                }else{
+                    userFuture = session.getSessionUser("", false);
+                }
+            }
             userFuture.whenComplete((currentUser, e) -> {
                 if (userFuture.isCompletedExceptionally()) {
                     asyncResponse.complete(Response.succResp(
@@ -67,13 +86,27 @@ public class AuthHandler implements Handler {
                         return;
                     }
                     // 异地登录
-                    if (!Objects.equals(token, currentUser.getToken())) {
-                        asyncResponse.complete(Response.succResp(
-                                BackVOUtil.operateError(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
-                        return;
+                    if(StringUtils.isNotBlank(mobileToken)){
+                        if (!Objects.equals(token, currentUser.getMobileToken())) {
+                            asyncResponse.complete(Response.succResp(
+                                    BackVOUtil.operateError(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
+                            return;
+                        }
+                    }else {
+                        if (!Objects.equals(token, currentUser.getToken())) {
+                            asyncResponse.complete(Response.succResp(
+                                    BackVOUtil.operateError(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
+                            return;
+                        }
                     }
-
                     // 请求鉴权
+                    if (!AuthConfig.getPassOperationsWithoutAuth().contains(invocation.getOperationMeta().getMicroserviceQualifiedName()) && !checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAccessUrlSet())) {
+                    	log.info("current request path: {} forbidden", invocation.getContext(ContextConstant.REQUEST_PATH));
+                    	asyncResponse.complete(Response.succResp(
+	                		  BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
+                    	return;
+                    }
+                    currentUser.setAuthUrls(null);
                     //设置全局用户
                     invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
                     log.info("CurrentUser:{},Microservice:{},SchemaID:{},OperationName:{}",
@@ -81,7 +114,6 @@ public class AuthHandler implements Handler {
                             invocation.getMicroserviceName(),
                             invocation.getSchemaId(),
                             invocation.getOperationName());
-
                     try {
                         invocation.next(asyncResponse);
                     } catch (Throwable ex) {

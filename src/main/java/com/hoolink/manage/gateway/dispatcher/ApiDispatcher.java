@@ -7,6 +7,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.CookieHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.edge.core.AbstractEdgeDispatcher;
 import org.apache.servicecomb.edge.core.EdgeInvocation;
 import org.slf4j.Logger;
@@ -60,11 +61,13 @@ public class ApiDispatcher extends AbstractEdgeDispatcher {
                 super.createInvocation();
                 HttpServerRequest request = context.request();
                 String xToken = request.getHeader(ContextConstant.TOKEN);
+                String mToken = request.getHeader(ContextConstant.MOBILE_TOKEN);
                 String deviceType = request.getHeader("X-Mobile");
                 String authPath = request.path().substring(request.path().indexOf('/', 1));
                 invocation.addContext(ContextConstant.REQUEST_PATH, authPath);
                 //token全局化
                 invocation.addContext(ContextConstant.TOKEN, xToken);
+                invocation.addContext(ContextConstant.MOBILE_TOKEN, mToken);
                 invocation.addContext(ContextConstant.TX_ID, txId);
                 invocation.addContext("X-Mobile", deviceType);
             }
