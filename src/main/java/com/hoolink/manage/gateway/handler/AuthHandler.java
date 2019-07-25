@@ -82,7 +82,7 @@ public class AuthHandler implements Handler {
                     // 当前用户登录超时
                     if (currentUser == null) {
                         asyncResponse.complete(Response.succResp(
-                                BackVOUtil.operateError(HoolinkExceptionMassageEnum.LOGIN_TIME_OUT.getMassage())));
+                                BackVOUtil.operateError(HoolinkExceptionMassageEnum.USER_SESSION_EMPTY.getMassage())));
                         return;
                     }
                     // 异地登录
