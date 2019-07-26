@@ -57,7 +57,6 @@ public class AuthHandler implements Handler {
                 token = invocation.getContext(ContextConstant.TOKEN);
             }
             // 没有token或token长度不对则无权限访问
-//            if (token == null || token.length() < TOKEN_LENGTH) {
             if (token == null && mobileToken==null) {
                 asyncResponse.complete(Response.succResp(
                         BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
@@ -73,58 +72,81 @@ public class AuthHandler implements Handler {
                     userFuture = session.getSessionUser("", false);
                 }
             }
-            userFuture.whenComplete((currentUser, e) -> {
-                if (userFuture.isCompletedExceptionally()) {
+            checkCurrentUser( userFuture,asyncResponse,invocation,mobileToken,token);
+        }
+    }
+
+    private void checkCurrentUser(CompletableFuture<CurrentUserBO> userFuture,AsyncResponse asyncResponse,Invocation invocation,String mobileToken,String token){
+        userFuture.whenComplete((currentUser, e) -> {
+            if (userFuture.isCompletedExceptionally()) {
+                asyncResponse.complete(Response.succResp(
+                        BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
+                return;
+            } else {
+                // 当前用户登录超时
+                if (currentUser == null) {
+                    asyncResponse.complete(Response.succResp(
+                            BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.USER_SESSION_EMPTY.getMassage())));
+                    return;
+                }
+                // 异地登录
+                if(StringUtils.isNotBlank(mobileToken)){
+                    if (!Objects.equals(token, currentUser.getMobileToken())) {
+                        asyncResponse.complete(Response.succResp(
+                                BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
+                        return;
+                    }
+                }else {
+                    if (!Objects.equals(token, currentUser.getToken())) {
+                        asyncResponse.complete(Response.succResp(
+                                BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
+                        return;
+                    }
+                }
+                // 账号禁用
+                if (currentUser.getStatus() != null && !currentUser.getStatus()) {
+                    asyncResponse.complete(Response.succResp(
+                            BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.USER_FORBIDDEN.getMassage())));
+                    return;
+                }
+                // 账号删除
+                if (currentUser.getEnabled() != null && !currentUser.getEnabled()) {
+                    asyncResponse.complete(Response.succResp(
+                            BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.USER_ACCOUNT_NOT_EXIST.getMassage())));
+                    return;
+                }
+                //角色被禁用
+                if(currentUser.getRoleStatus()!=null && !currentUser.getRoleStatus()){
+                    asyncResponse.complete(Response.succResp(
+                            BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.ROLE_STATUS_DISABLED.getMassage())));
+                    return;
+                }
+
+                // 请求鉴权
+                if (!AuthConfig.getPassOperationsWithoutAuth().contains(invocation.getOperationMeta().getMicroserviceQualifiedName()) && !checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAccessUrlSet())) {
+                    log.info("current request path: {} forbidden", invocation.getContext(ContextConstant.REQUEST_PATH));
                     asyncResponse.complete(Response.succResp(
                             BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
                     return;
-                } else {
-                    // 当前用户登录超时
-                    if (currentUser == null) {
-                        asyncResponse.complete(Response.succResp(
-                                BackVOUtil.operateError(HoolinkExceptionMassageEnum.LOGIN_TIME_OUT.getMassage())));
-                        return;
-                    }
-                    // 异地登录
-                    if(StringUtils.isNotBlank(mobileToken)){
-                        if (!Objects.equals(token, currentUser.getMobileToken())) {
-                            asyncResponse.complete(Response.succResp(
-                                    BackVOUtil.operateError(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
-                            return;
-                        }
-                    }else {
-                        if (!Objects.equals(token, currentUser.getToken())) {
-                            asyncResponse.complete(Response.succResp(
-                                    BackVOUtil.operateError(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage())));
-                            return;
-                        }
-                    }
-                    // 请求鉴权
-                    if (!AuthConfig.getPassOperationsWithoutAuth().contains(invocation.getOperationMeta().getMicroserviceQualifiedName()) && !checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAccessUrlSet())) {
-                    	log.info("current request path: {} forbidden", invocation.getContext(ContextConstant.REQUEST_PATH));
-                    	asyncResponse.complete(Response.succResp(
-	                		  BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
-                    	return;
-                    }
-                    currentUser.setAuthUrls(null);
-                    //设置全局用户
-                    invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
-                    log.info("CurrentUser:{},Microservice:{},SchemaID:{},OperationName:{}",
-                            currentUser.getAccount(),
-                            invocation.getMicroserviceName(),
-                            invocation.getSchemaId(),
-                            invocation.getOperationName());
-                    try {
-                        invocation.next(asyncResponse);
-                    } catch (Throwable ex) {
-                        log.error("servic is error :{},method:{}", invocation.getMicroserviceName(), invocation.getInvocationQualifiedName());
-                        String message = invocation.getMicroserviceName() + HoolinkExceptionMassageEnum.NOT_REGISTERED_IN_THE_REGISTRY.getMassage();
-                        BackVO backVO = BackVOUtil.operateError(message);
-                        asyncResponse.success(backVO);
-                    }
                 }
-            });
-        }
+                currentUser.setAuthUrls(null);
+                //设置全局用户
+                invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
+                log.info("CurrentUser:{},Microservice:{},SchemaID:{},OperationName:{}",
+                        currentUser.getAccount(),
+                        invocation.getMicroserviceName(),
+                        invocation.getSchemaId(),
+                        invocation.getOperationName());
+                try {
+                    invocation.next(asyncResponse);
+                } catch (Throwable ex) {
+                    log.error("servic is error :{},method:{}", invocation.getMicroserviceName(), invocation.getInvocationQualifiedName());
+                    String message = invocation.getMicroserviceName() + HoolinkExceptionMassageEnum.NOT_REGISTERED_IN_THE_REGISTRY.getMassage();
+                    BackVO backVO = BackVOUtil.operateError(message);
+                    asyncResponse.success(backVO);
+                }
+            }
+        });
     }
 
     /**
