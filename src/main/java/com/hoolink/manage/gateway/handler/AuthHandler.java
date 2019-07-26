@@ -103,12 +103,6 @@ public class AuthHandler implements Handler {
                         return;
                     }
                 }
-                // 账号禁用
-                if (currentUser.getStatus() != null && !currentUser.getStatus()) {
-                    asyncResponse.complete(Response.succResp(
-                            BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.USER_FORBIDDEN.getMassage())));
-                    return;
-                }
                 // 账号删除
                 if (currentUser.getEnabled() != null && !currentUser.getEnabled()) {
                     asyncResponse.complete(Response.succResp(
@@ -121,12 +115,21 @@ public class AuthHandler implements Handler {
                             BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.ROLE_STATUS_DISABLED.getMassage())));
                     return;
                 }
+                // 账号禁用
+                if (currentUser.getStatus() != null && !currentUser.getStatus()) {
+                    asyncResponse.complete(Response.succResp(
+                            BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.USER_FORBIDDEN.getMassage())));
+                    return;
+                }
 
                 // 请求鉴权
                 if (!AuthConfig.getPassOperationsWithoutAuth().contains(invocation.getOperationMeta().getMicroserviceQualifiedName()) && !checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAccessUrlSet())) {
                     log.info("current request path: {} forbidden", invocation.getContext(ContextConstant.REQUEST_PATH));
                     asyncResponse.complete(Response.succResp(
                             BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
+                    currentUser.setAuthUrls(null);
+                    //设置全局用户
+                    invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
                     return;
                 }
                 currentUser.setAuthUrls(null);
