@@ -32,7 +32,9 @@ public class AuthConfig {
         passOperations.add("manage-base.mobileUserController.forgetPassword");
         // 获取验证码
         passOperations.add("manage-base.userController.getPhoneCode");
+        passOperations.add("manage-base.userController.bindPhoneGetCode");
         passOperations.add("manage-base.mobileUserController.getPhoneCode");
+        passOperations.add("manage-base.mobileUserController.bindPhoneGetCode");
         // 重置密码
         passOperations.add("manage-base.userController.resetPassword");
         passOperations.add("manage-base.mobileUserController.resetPassword");
