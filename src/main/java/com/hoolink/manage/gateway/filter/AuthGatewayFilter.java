@@ -7,8 +7,10 @@ import com.hoolink.manage.gateway.handler.AuthConfig;
 import com.hoolink.sdk.bo.base.CurrentUserBO;
 import com.hoolink.sdk.constants.ContextConstant;
 import com.hoolink.sdk.exception.HoolinkExceptionMassageEnum;
+
 import com.hoolink.sdk.utils.JSONUtils;
-import com.hoolink.sdk.utils.UserInfoContext;
+import com.hoolink.sdk.utils.UUIDUtil;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
@@ -54,8 +56,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
                 .getFirst(ContextConstant.MOBILE_TOKEN);
             String token;
             if (StringUtils.isNotBlank(mobileToken)) {
-                token = serverWebExchange.getRequest().getHeaders()
-                    .getFirst(ContextConstant.MOBILE_TOKEN);
+                token = serverWebExchange.getRequest().getHeaders().getFirst(ContextConstant.MOBILE_TOKEN);
             } else {
                 token = serverWebExchange.getRequest().getHeaders().getFirst(ContextConstant.TOKEN);
             }
@@ -65,7 +66,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
                 response.setStatusCode(HttpStatus.UNAUTHORIZED);
                 return response.setComplete();
             }
-            // 用户校验 和存当前用户的信息 todo
+            // 用户校验 和存当前用户的信息
             CurrentUserBO currentUserBO;
             if (StringUtils.isNotBlank(mobileToken)) {
                 currentUserBO = sessionFeign.getSession(token, true);
@@ -118,20 +119,16 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
         }
 
         // 请求鉴权
-//                if (!AuthConfig.getPassOperationsWithoutAuth().contains(invocation.getOperationMeta().getMicroserviceQualifiedName()) && !checkAuth(invocation.getContext(ContextConstant.REQUEST_PATH), currentUser.getAccessUrlSet())) {
-//                    log.info("current request path: {} forbidden", invocation.getContext(ContextConstant.REQUEST_PATH));
-//                    asyncResponse.complete(Response.succResp(
-//                            BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage())));
-//                    currentUser.setAuthUrls(null);
-//                    //设置全局用户
-//                    invocation.addContext(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
-//                    return;
-//                }
+        if(!checkAuth(serverWebExchange.getRequest().getURI().getPath(),currentUser.getAccessUrlSet())){
+            return authErro(serverWebExchange.getResponse(),
+                HoolinkExceptionMassageEnum.NOT_AUTH.getMassage());
+        }
+
         currentUser.setAuthUrls(null);
-        //设置全局用户
         currentUser.setAccessUrlSet(null);
+        //设置全局用户
         serverWebExchange.getRequest().mutate().header(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
-        UserInfoContext.setUser(currentUser);
+        serverWebExchange.getRequest().mutate().header(ContextConstant.TX_ID, UUIDUtil.getTxId());
         log.info("CurrentUser:{},Microservice:{}", currentUser.getAccount(),
             serverWebExchange.getApplicationContext().getApplicationName());
         try {
