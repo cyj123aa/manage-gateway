@@ -1,9 +1,9 @@
 package com.hoolink.manage.gateway;
 
-import org.apache.servicecomb.provider.springmvc.reference.RestTemplateBuilder;
-import org.apache.servicecomb.springboot2.starter.EnableServiceComb;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
@@ -15,18 +15,15 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Administrator
  * @date 2019/1/17 14:23
  */
-@EnableServiceComb
+@EnableDiscoveryClient
 @SpringBootApplication
+@EnableFeignClients
 public class GatewayApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(GatewayApplication.class, args);
     }
 
-    @Bean
-    public RestTemplate getRestTemplate() {
-        return RestTemplateBuilder.create();
-    }
 
     /**
      * 记录用户操作日志线程池
