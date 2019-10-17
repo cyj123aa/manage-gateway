@@ -14,6 +14,7 @@ import com.hoolink.sdk.utils.UUIDUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Resource;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -23,6 +24,8 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -44,13 +47,43 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
     private ObjectMapper objectMapper;
     private static final int SESSION_TIMEOUT_SECONDS = 120;
 
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     @Override
     public Mono<Void> filter(ServerWebExchange serverWebExchange,
         GatewayFilterChain gatewayFilterChain) {
         String url = serverWebExchange.getRequest().getURI().getPath();
-        //白名单放行 todo
+        // 用户校验 和存当前用户的信息
+        CurrentUserBO currentUserBO;
+        String txId = UUIDUtil.getTxId();
+        //白名单放行
         if (AuthConfig.getPassOperations().contains(url)) {
-            return gatewayFilterChain.filter(serverWebExchange);
+            if(url.endsWith(Constant.LOGIN) || url.endsWith(Constant.LOGOUT)){
+                return gatewayFilterChain.filter(serverWebExchange);
+            }
+            String token = serverWebExchange.getRequest().getHeaders().getFirst(ContextConstant.TOKEN);
+            String mToken = serverWebExchange.getRequest().getHeaders().getFirst(ContextConstant.MOBILE_TOKEN);
+            if (StringUtils.isNotBlank(token) && token.length() >= Constant.TOKEN_LENGTH) {
+                currentUserBO = sessionFeign.getSession(token, false);
+                currentUserBO.setAccessUrlSet(null);
+                currentUserBO.setAuthUrls(null);
+                serverWebExchange.getRequest().mutate().header(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUserBO));
+                serverWebExchange.getRequest().mutate().header(ContextConstant.TX_ID, txId);
+                return gatewayFilterChain.filter(serverWebExchange);
+            } else if(StringUtils.isNotBlank(mToken) && mToken.length() >= Constant.TOKEN_LENGTH) {
+                    currentUserBO = sessionFeign.getSession(token, true);
+                    //设置全局用户，清空authUrls避免请求头过大
+                    currentUserBO.setAccessUrlSet(null);
+                    currentUserBO.setAuthUrls(null);
+                    serverWebExchange.getRequest().mutate().header(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUserBO));
+                    serverWebExchange.getRequest().mutate().header(ContextConstant.TX_ID, txId);
+                return gatewayFilterChain.filter(serverWebExchange);
+            } else {
+                return authErro(serverWebExchange.getResponse(),
+                    HoolinkExceptionMassageEnum.NOT_AUTH.getMassage());
+            }
         } else {
             String mobileToken = serverWebExchange.getRequest().getHeaders()
                 .getFirst(ContextConstant.MOBILE_TOKEN);
@@ -61,13 +94,12 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
                 token = serverWebExchange.getRequest().getHeaders().getFirst(ContextConstant.TOKEN);
             }
             // 没有token或token长度不对则无权限访问
-            if (token == null) {
+            if (StringUtils.isNotBlank(token)) {
                 ServerHttpResponse response = serverWebExchange.getResponse();
                 response.setStatusCode(HttpStatus.UNAUTHORIZED);
                 return response.setComplete();
             }
             // 用户校验 和存当前用户的信息
-            CurrentUserBO currentUserBO;
             if (StringUtils.isNotBlank(mobileToken)) {
                 currentUserBO = sessionFeign.getSession(token, true);
             } else {
@@ -78,13 +110,13 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
                 }
             }
             return checkCurrentUser(currentUserBO, serverWebExchange, gatewayFilterChain,
-                mobileToken, token);
+                mobileToken, token, txId);
         }
     }
 
     private Mono<Void> checkCurrentUser(CurrentUserBO currentUser,
         ServerWebExchange serverWebExchange, GatewayFilterChain gatewayFilterChain,
-        String mobileToken, String token) {
+        String mobileToken, String token,String txId) {
         // 当前用户登录超时
         if (currentUser == null) {
             return authErro(serverWebExchange.getResponse(),
@@ -128,7 +160,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
         currentUser.setAccessUrlSet(null);
         //设置全局用户
         serverWebExchange.getRequest().mutate().header(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
-        serverWebExchange.getRequest().mutate().header(ContextConstant.TX_ID, UUIDUtil.getTxId());
+        serverWebExchange.getRequest().mutate().header(ContextConstant.TX_ID, txId);
         log.info("CurrentUser:{},Microservice:{}", currentUser.getAccount(),
             serverWebExchange.getApplicationContext().getApplicationName());
         try {

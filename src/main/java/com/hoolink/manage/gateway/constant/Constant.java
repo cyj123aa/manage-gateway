@@ -6,4 +6,11 @@ package com.hoolink.manage.gateway.constant;
  */
 public class Constant {
     public static final String SESSION_PREFIX = "manage_base_user_info";
+    /**
+     * token截取后长度
+     */
+    public static final int TOKEN_LENGTH = 52;
+
+    public static final String LOGIN = "login";
+    public static final String LOGOUT = "logout";
 }

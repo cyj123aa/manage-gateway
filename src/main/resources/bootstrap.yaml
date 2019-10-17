@@ -6,9 +6,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.0.170:8848
+        server-addr: 192.168.1.171:8848
       config:
-        server-addr: 192.168.0.170:8848
+        server-addr: 192.168.1.171:8848
         file-extension: yaml
   main:
     allow-bean-definition-overriding: true
