@@ -163,7 +163,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
 
         // 请求鉴权
         String auth = exchange.getRequest().getURI().getPath().split(API)[1];
-        if(!checkAuth(auth,currentUser.getAccessUrlSet())){
+        if(!AuthConfig.getPassOperationsWithoutAuth().contains(auth) && !checkAuth(auth,currentUser.getAccessUrlSet())){
             setResponseOk(exchange);
             result=JSONObject.toJSONString(BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage()));
             return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(result.getBytes())));
