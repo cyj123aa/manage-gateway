@@ -25,7 +25,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -55,6 +55,13 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange serverWebExchange,
         GatewayFilterChain gatewayFilterChain) {
+         // 处理跨域
+        log.info("请求Method:{}",serverWebExchange.getRequest().getMethod().name());
+        if (serverWebExchange.getRequest().getMethod().name().equalsIgnoreCase("OPTIONS")){
+            serverWebExchange.getResponse().getHeaders().add("Access-Control-Allow-Origin", "*");
+            serverWebExchange.getResponse().getHeaders().add("Access-Control-Allow-Methods", "*");
+            serverWebExchange.getResponse().getHeaders().add("Access-Control-Allow-Headers", "*");
+        }
         String path = serverWebExchange.getRequest().getURI().getPath();
         log.info("请求的path:{}",path);
         String url = path.split(API)[1];
