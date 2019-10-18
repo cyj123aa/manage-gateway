@@ -46,6 +46,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
     private SessionFeign sessionFeign;
     private ObjectMapper objectMapper;
     private static final int SESSION_TIMEOUT_SECONDS = 120;
+    private static final String API = "/api";
 
 
     @Autowired
@@ -54,7 +55,9 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange serverWebExchange,
         GatewayFilterChain gatewayFilterChain) {
-        String url = serverWebExchange.getRequest().getURI().getPath();
+        String path = serverWebExchange.getRequest().getURI().getPath();
+        log.info("请求的path:{}",path);
+        String url = path.split(API)[1];
         // 用户校验 和存当前用户的信息
         CurrentUserBO currentUserBO;
         String txId = UUIDUtil.getTxId();
