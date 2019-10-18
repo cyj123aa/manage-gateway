@@ -94,7 +94,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
                 token = serverWebExchange.getRequest().getHeaders().getFirst(ContextConstant.TOKEN);
             }
             // 没有token或token长度不对则无权限访问
-            if (StringUtils.isNotBlank(token)) {
+            if (StringUtils.isBlank(token)) {
                 ServerHttpResponse response = serverWebExchange.getResponse();
                 response.setStatusCode(HttpStatus.UNAUTHORIZED);
                 return response.setComplete();
