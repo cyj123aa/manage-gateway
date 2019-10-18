@@ -7,14 +7,11 @@ import com.hoolink.manage.gateway.handler.AuthConfig;
 import com.hoolink.sdk.bo.base.CurrentUserBO;
 import com.hoolink.sdk.constants.ContextConstant;
 import com.hoolink.sdk.exception.HoolinkExceptionMassageEnum;
-
 import com.hoolink.sdk.utils.JSONUtils;
 import com.hoolink.sdk.utils.UUIDUtil;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Resource;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,7 +22,6 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
