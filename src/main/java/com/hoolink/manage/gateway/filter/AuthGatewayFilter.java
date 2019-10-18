@@ -175,14 +175,12 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
         //设置全局用户
         exchange.getRequest().mutate().header(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
         exchange.getRequest().mutate().header(ContextConstant.TX_ID, txId);
-        log.info("CurrentUser:{},Microservice:{}", currentUser.getAccount(),
-            exchange.getApplicationContext().getApplicationName());
+        log.info("CurrentUser:{},Microservice:{}", currentUser.getAccount(), exchange.getApplicationContext().getApplicationName());
         try {
             return gatewayFilterChain.filter(exchange);
         } catch (Throwable ex) {
             log.error("servic is error :{},url:{}",
-                exchange.getApplicationContext().getApplicationName(),
-                exchange.getRequest().getPath());
+                exchange.getApplicationContext().getApplicationName(), exchange.getRequest().getPath());
         }
         return null;
     }
