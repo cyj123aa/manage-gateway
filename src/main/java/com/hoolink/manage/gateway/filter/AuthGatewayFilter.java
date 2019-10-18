@@ -1,5 +1,6 @@
 package com.hoolink.manage.gateway.filter;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoolink.manage.gateway.constant.Constant;
 import com.hoolink.manage.gateway.feign.SessionFeign;
@@ -7,6 +8,7 @@ import com.hoolink.manage.gateway.handler.AuthConfig;
 import com.hoolink.sdk.bo.base.CurrentUserBO;
 import com.hoolink.sdk.constants.ContextConstant;
 import com.hoolink.sdk.exception.HoolinkExceptionMassageEnum;
+import com.hoolink.sdk.utils.BackVOUtil;
 import com.hoolink.sdk.utils.JSONUtils;
 import com.hoolink.sdk.utils.UUIDUtil;
 import java.nio.charset.StandardCharsets;
@@ -23,6 +25,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -81,8 +84,9 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
                     serverWebExchange.getRequest().mutate().header(ContextConstant.TX_ID, txId);
                 return gatewayFilterChain.filter(serverWebExchange);
             } else {
-                return authErro(serverWebExchange.getResponse(),
-                    HoolinkExceptionMassageEnum.NOT_AUTH.getMassage());
+                setResponseOk(serverWebExchange);
+                String result=JSONObject.toJSONString(BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage()));
+                return serverWebExchange.getResponse().writeWith(Mono.just(serverWebExchange.getResponse().bufferFactory().wrap(result.getBytes())));
             }
         } else {
             String mobileToken = serverWebExchange.getRequest().getHeaders().getFirst(ContextConstant.MOBILE_TOKEN);
@@ -114,60 +118,71 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
     }
 
     private Mono<Void> checkCurrentUser(CurrentUserBO currentUser,
-        ServerWebExchange serverWebExchange, GatewayFilterChain gatewayFilterChain,
+        ServerWebExchange exchange, GatewayFilterChain gatewayFilterChain,
         String mobileToken, String token,String txId) {
+
+        String result;
         // 当前用户登录超时
         if (currentUser == null) {
-            return authErro(serverWebExchange.getResponse(),
-                HoolinkExceptionMassageEnum.USER_SESSION_EMPTY.getMassage());
+            setResponseOk(exchange);
+            result= JSONObject.toJSONString(BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.USER_SESSION_EMPTY.getMassage()));
+            return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(result.getBytes())));
         }
         // 异地登录
-        if (StringUtils.isNotBlank(mobileToken)) {
+        if(StringUtils.isNotBlank(mobileToken)){
             if (!Objects.equals(token, currentUser.getMobileToken())) {
-                return authErro(serverWebExchange.getResponse(),
-                    HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage());
+                setResponseOk(exchange);
+                result=JSONObject.toJSONString(BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage()));
+                return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(result.getBytes())));
             }
-        } else {
+        }else {
             if (!Objects.equals(token, currentUser.getToken())) {
-                return authErro(serverWebExchange.getResponse(),
-                    HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage());
+                setResponseOk(exchange);
+                result=JSONObject.toJSONString(BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.OTHER_USER_LOGIN.getMassage()));
+                return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(result.getBytes())));
             }
         }
         // 账号删除
         if (currentUser.getEnabled() != null && !currentUser.getEnabled()) {
-            return authErro(serverWebExchange.getResponse(),
-                HoolinkExceptionMassageEnum.USER_ACCOUNT_NOT_EXIST.getMassage());
+            setResponseOk(exchange);
+            result=JSONObject.toJSONString(BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.USER_ACCOUNT_NOT_EXIST.getMassage()));
+            return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(result.getBytes())));
         }
         //角色被禁用
-        if (currentUser.getRoleStatus() != null && !currentUser.getRoleStatus()) {
-            return authErro(serverWebExchange.getResponse(),
-                HoolinkExceptionMassageEnum.ROLE_STATUS_DISABLED.getMassage());
+        if(currentUser.getRoleStatus()!=null && !currentUser.getRoleStatus()){
+            setResponseOk(exchange);
+            result=JSONObject.toJSONString(BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.ROLE_STATUS_DISABLED.getMassage()));
+            return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(result.getBytes())));
         }
         // 账号禁用
         if (currentUser.getStatus() != null && !currentUser.getStatus()) {
-            return authErro(serverWebExchange.getResponse(),
-                HoolinkExceptionMassageEnum.USER_FORBIDDEN.getMassage());
+            setResponseOk(exchange);
+            result=JSONObject.toJSONString(BackVOUtil.operateErrorToLogin(HoolinkExceptionMassageEnum.USER_FORBIDDEN.getMassage()));
+            return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(result.getBytes())));
         }
 
         // 请求鉴权
-        String auth = serverWebExchange.getRequest().getURI().getPath().split(API)[1];
+        String auth = exchange.getRequest().getURI().getPath().split(API)[1];
         if(!checkAuth(auth,currentUser.getAccessUrlSet())){
-            return authErro(serverWebExchange.getResponse(), HoolinkExceptionMassageEnum.NOT_AUTH.getMassage());
+            setResponseOk(exchange);
+            result=JSONObject.toJSONString(BackVOUtil.operateError(HoolinkExceptionMassageEnum.NOT_AUTH.getMassage()));
+            return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(result.getBytes())));
+
         }
 
         currentUser.setAuthUrls(null);
         currentUser.setAccessUrlSet(null);
         //设置全局用户
-        serverWebExchange.getRequest().mutate().header(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
-        serverWebExchange.getRequest().mutate().header(ContextConstant.TX_ID, txId);
+        exchange.getRequest().mutate().header(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
+        exchange.getRequest().mutate().header(ContextConstant.TX_ID, txId);
         log.info("CurrentUser:{},Microservice:{}", currentUser.getAccount(),
-            serverWebExchange.getApplicationContext().getApplicationName());
+            exchange.getApplicationContext().getApplicationName());
         try {
-            return gatewayFilterChain.filter(serverWebExchange);
+            return gatewayFilterChain.filter(exchange);
         } catch (Throwable ex) {
             log.error("servic is error :{},url:{}",
-                serverWebExchange.getApplicationContext().getApplicationName(),
-                serverWebExchange.getRequest().getPath());
+                exchange.getApplicationContext().getApplicationName(),
+                exchange.getRequest().getPath());
         }
         return null;
     }
@@ -189,7 +204,10 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
         return Constant.SESSION_PREFIX + userId;
     }
 
-
+    private void setResponseOk(ServerWebExchange exchange){
+        exchange.getResponse().setStatusCode(HttpStatus.OK);
+        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
+    }
     /**
      * 鉴权检查
      */
