@@ -85,8 +85,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
                     HoolinkExceptionMassageEnum.NOT_AUTH.getMassage());
             }
         } else {
-            String mobileToken = serverWebExchange.getRequest().getHeaders()
-                .getFirst(ContextConstant.MOBILE_TOKEN);
+            String mobileToken = serverWebExchange.getRequest().getHeaders().getFirst(ContextConstant.MOBILE_TOKEN);
             String token;
             if (StringUtils.isNotBlank(mobileToken)) {
                 token = serverWebExchange.getRequest().getHeaders().getFirst(ContextConstant.MOBILE_TOKEN);
@@ -151,9 +150,9 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
         }
 
         // 请求鉴权
-        if(!checkAuth(serverWebExchange.getRequest().getURI().getPath(),currentUser.getAccessUrlSet())){
-            return authErro(serverWebExchange.getResponse(),
-                HoolinkExceptionMassageEnum.NOT_AUTH.getMassage());
+        String auth = serverWebExchange.getRequest().getURI().getPath().split(API)[1];
+        if(!checkAuth(auth,currentUser.getAccessUrlSet())){
+            return authErro(serverWebExchange.getResponse(), HoolinkExceptionMassageEnum.NOT_AUTH.getMassage());
         }
 
         currentUser.setAuthUrls(null);
