@@ -55,13 +55,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange serverWebExchange,
         GatewayFilterChain gatewayFilterChain) {
-         // 处理跨域
         log.info("请求Method:{}",serverWebExchange.getRequest().getMethod().name());
-        if (serverWebExchange.getRequest().getMethod().name().equalsIgnoreCase("OPTIONS")){
-            serverWebExchange.getResponse().getHeaders().add("Access-Control-Allow-Origin", "*");
-            serverWebExchange.getResponse().getHeaders().add("Access-Control-Allow-Methods", "*");
-            serverWebExchange.getResponse().getHeaders().add("Access-Control-Allow-Headers", "*");
-        }
         String path = serverWebExchange.getRequest().getURI().getPath();
         log.info("请求的path:{}",path);
         String url = path.split(API)[1];
