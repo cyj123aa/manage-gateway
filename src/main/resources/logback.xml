@@ -17,6 +17,20 @@
         </layout>
     </appender>
 
+    <appender  name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <param name="Encoding" value="UTF-8"/>
+        <remoteHost>192.168.1.171</remoteHost>
+        <port>5044</port>
+        <!-- encoder is required -->
+        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder" />
+    </appender>
+
+    <logger name="spring.cloud" level="INFO" additivity="false">
+        <appender-ref ref="logstash" />
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+
     <!--hoolink服务日志输出规则-->
     <appender name="logAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -77,14 +91,6 @@
         <appender-ref ref="logAppender"/>
         <appender-ref ref="STDOUT"/>
     </logger>
-    <!--servicecomb-->
-    <logger name="org.apache.servicecomb" level="INFO" additivity="false">
-        <appender-ref ref="logAppender"/>
-        <appender-ref ref="STDOUT"/>
-    </logger>
-    <!--huawei-->
-    <logger name="com.huawei.paas.cse" level="INFO" additivity="false">
-        <appender-ref ref="logAppender"/>
-        <appender-ref ref="STDOUT"/>
-    </logger>
+
+
 </configuration>
