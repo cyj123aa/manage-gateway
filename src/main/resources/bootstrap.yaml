@@ -8,6 +8,7 @@ spring:
       discovery:
         server-addr: 192.168.1.171:8848
       config:
+        namespace: f9f42808-eef3-40dd-8cfe-669edaa8ed98
         server-addr: 192.168.1.171:8848
         file-extension: yaml
   main:
