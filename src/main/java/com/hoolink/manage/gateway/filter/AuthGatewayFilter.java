@@ -11,18 +11,20 @@ import com.hoolink.sdk.exception.HoolinkExceptionMassageEnum;
 import com.hoolink.sdk.utils.BackVOUtil;
 import com.hoolink.sdk.utils.JSONUtils;
 import com.hoolink.sdk.utils.UUIDUtil;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,7 +45,6 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
 
     @Autowired
     private SessionFeign sessionFeign;
-    private ObjectMapper objectMapper;
     private static final int SESSION_TIMEOUT_SECONDS = 120;
     private static final String API = "/api";
 
@@ -54,13 +55,14 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange serverWebExchange,
         GatewayFilterChain gatewayFilterChain) {
-        log.info("请求Method:{}",serverWebExchange.getRequest().getMethod().name());
         String path = serverWebExchange.getRequest().getURI().getPath();
-        log.info("请求的path:{}",path);
+        String txId = UUIDUtil.getTxId();
         String url = path.split(API)[1];
+        Flux<DataBuffer> cachedBody = serverWebExchange.getAttribute(Constant.CACHE_REQUEST_BODY_OBJECT_KEY);
+        String body = readBody(cachedBody);
+        log.info("[txId]: {} microService is: {}, url is: {}, params is: {}", txId, url.split("/")[1], url, body);
         // 用户校验 和存当前用户的信息
         CurrentUserBO currentUserBO;
-        String txId = UUIDUtil.getTxId();
         //白名单放行
         if (AuthConfig.getPassOperations().contains(url)) {
             if(url.endsWith(Constant.LOGIN) || url.endsWith(Constant.LOGOUT)){
@@ -112,8 +114,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
                     currentUserBO = sessionFeign.getSession("", false);
                 }
             }
-            return checkCurrentUser(currentUserBO, serverWebExchange, gatewayFilterChain,
-                mobileToken, token, txId);
+            return checkCurrentUser(currentUserBO, serverWebExchange, gatewayFilterChain, mobileToken, token, txId);
         }
     }
 
@@ -175,31 +176,12 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
         //设置全局用户
         exchange.getRequest().mutate().header(ContextConstant.MANAGE_CURRENT_USER, JSONUtils.toJSONString(currentUser));
         exchange.getRequest().mutate().header(ContextConstant.TX_ID, txId);
-        log.info("CurrentUser:{},Microservice:{}", currentUser.getAccount(), exchange.getApplicationContext().getApplicationName());
         try {
             return gatewayFilterChain.filter(exchange);
         } catch (Throwable ex) {
-            log.error("servic is error :{},url:{}",
-                exchange.getApplicationContext().getApplicationName(), exchange.getRequest().getPath());
+            log.error("service is error :{},url:{}", ex.getMessage(), exchange.getRequest().getPath());
         }
         return null;
-    }
-
-    /**
-     * 认证错误输出
-     *
-     * @param resp 响应对象
-     * @param mess 错误信息
-     */
-    private Mono<Void> authErro(ServerHttpResponse resp, String mess) {
-        resp.setStatusCode(HttpStatus.UNAUTHORIZED);
-        resp.getHeaders().add("Content-Type", "application/json;charset=UTF-8");
-        DataBuffer buffer = resp.bufferFactory().wrap(mess.getBytes(StandardCharsets.UTF_8));
-        return resp.writeWith(Flux.just(buffer));
-    }
-
-    private String getKey(Long userId) {
-        return Constant.SESSION_PREFIX + userId;
     }
 
     private void setResponseOk(ServerWebExchange exchange){
@@ -219,5 +201,20 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
         return 0;
     }
 
+    /**
+     * 获取请教的 request body
+     * @param body
+     * @return
+     */
+    private static String readBody(Flux<DataBuffer> body) {
+        AtomicReference<String> rawRef = new AtomicReference<>();
+        body.subscribe(buffer -> {
+            byte[] bytes = new byte[buffer.readableByteCount()];
+            buffer.read(bytes);
+            DataBufferUtils.release(buffer);
+            rawRef.set(Strings.fromUTF8ByteArray(bytes));
+        });
+        return rawRef.get();
+    }
 
 }

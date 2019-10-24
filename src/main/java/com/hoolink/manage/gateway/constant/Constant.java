@@ -13,4 +13,6 @@ public class Constant {
 
     public static final String LOGIN = "login";
     public static final String LOGOUT = "logout";
+
+    public static final String CACHE_REQUEST_BODY_OBJECT_KEY = "cachedRequestBodyObject";
 }
