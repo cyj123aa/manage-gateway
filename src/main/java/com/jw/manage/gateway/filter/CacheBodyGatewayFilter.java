@@ -1,6 +1,7 @@
-package com.hoolink.manage.gateway.filter;
+package com.jw.manage.gateway.filter;
 
-import com.hoolink.manage.gateway.constant.Constant;
+import com.jw.manage.gateway.constant.Constant;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -14,16 +15,19 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
- * @author chenzhixiong
- * @date 2019/10/24 13:57
+ * @author chenyuejun
+ * @date 2019/12/17 13:57
  * 该filter 是处理  SpringCloud SR2版本/Spring-boot 2.1.X  版本 gateway获取不到请求的request body
  */
 @Component
+@Slf4j
 public class CacheBodyGatewayFilter implements Ordered, GlobalFilter {
 
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+
+        log.info("come path filter");
         if (exchange.getRequest().getHeaders().getContentType() == null) {
             return chain.filter(exchange);
         } else {

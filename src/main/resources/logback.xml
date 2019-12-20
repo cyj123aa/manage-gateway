@@ -82,7 +82,7 @@
         <appender-ref ref="STDOUT"/>
     </logger>
     <!--hoolink服务-->
-    <logger name="com.hoolink" level="INFO" additivity="false">
+    <logger name="com.jw" level="INFO" additivity="false">
         <appender-ref ref="logAppender"/>
         <appender-ref ref="STDOUT"/>
     </logger>

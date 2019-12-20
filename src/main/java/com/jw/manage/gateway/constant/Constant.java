@@ -1,7 +1,7 @@
-package com.hoolink.manage.gateway.constant;
+package com.jw.manage.gateway.constant;
 
 /**
- * @author chenzhixiong
+ * @author chenyuejun
  * @date 2019/10/15 10:27
  */
 public class Constant {

@@ -1,8 +1,8 @@
-package com.hoolink.manage.gateway.feign;
+package com.jw.manage.gateway.feign;
 
 
-import com.hoolink.manage.gateway.feign.fallback.SessionFeignFallBack;
-import com.hoolink.sdk.bo.base.CurrentUserBO;
+import com.jw.manage.gateway.feign.fallback.SessionFeignFallBack;
+import com.jw.sdk.bo.base.CurrentUserBO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * @author chenzhixiong
+ * @author chenyuejun
  * @date 2019/10/14 16:46
  */
 @FeignClient(value = "manage-base" ,fallback = SessionFeignFallBack.class )

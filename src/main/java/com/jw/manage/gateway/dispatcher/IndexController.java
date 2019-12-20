@@ -1,4 +1,4 @@
-package com.hoolink.manage.gateway.dispatcher;
+package com.jw.manage.gateway.dispatcher;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author chenzhixiong
- * @date 2019/10/14 13:41
+ * @author chenyuejun
+ * @date 2019/12/16 13:41
  */
 @Slf4j
 @RestController

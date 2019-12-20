@@ -1,4 +1,4 @@
-package com.hoolink.manage.gateway;
+package com.jw.manage.gateway;
 
 
 import org.springframework.boot.SpringApplication;
@@ -7,11 +7,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -19,12 +16,12 @@ import org.springframework.web.util.pattern.PathPatternParser;
 
 
 /**
- * @author Administrator
- * @date 2019/1/17 14:23
+ * @author chenyuejun
+ * @date 2019/12/17 14:23
  */
 @EnableDiscoveryClient
 @SpringBootApplication
-@EnableFeignClients(basePackages = { "com.hoolink.manage.gateway.feign" })
+@EnableFeignClients(basePackages = { "com.jw.manage.gateway.feign" })
 public class GatewayApplication {
 
     public static void main(String[] args) {
@@ -43,33 +40,11 @@ public class GatewayApplication {
         config.addAllowedMethod("*");
         config.addAllowedOrigin("*");
         config.addAllowedHeader("*");
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
         source.registerCorsConfiguration("/**", config);
 
         return new CorsWebFilter(source);
     }
 
-    /**
-     * 记录用户操作日志线程池
-     */
-    @Bean
-    public Executor userLogExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        // 设置核心线程数
-        executor.setCorePoolSize(5);
-        // 设置最大线程数
-        executor.setMaxPoolSize(100);
-        // 设置队列容量
-        executor.setQueueCapacity(9999);
-        // 设置线程活跃时间（秒）
-        executor.setKeepAliveSeconds(60);
-        // 设置默认线程名称
-        executor.setThreadNamePrefix("userLog-");
-        // 设置拒绝策略
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        //执行初始化
-        executor.initialize();
-        return executor;
-    }
+
 }
