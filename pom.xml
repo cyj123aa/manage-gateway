@@ -122,6 +122,7 @@
 
     <build>
         <finalName>manage-gateway</finalName>
+        <defaultGoal>compile</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
