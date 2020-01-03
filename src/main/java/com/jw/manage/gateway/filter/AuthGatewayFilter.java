@@ -55,8 +55,7 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
         String path = serverWebExchange.getRequest().getURI().getPath();
         //链路id，这个请求在整个请求链路中的id，用于定位问题
         String txId = UUIDUtil.getTxId();
-        System.out.println("aaaaaaaaaaaaaaaaaaaaaa");
-        log.info("come path "+path);
+
       /*  Flux<DataBuffer> cachedBody = serverWebExchange.getAttribute(Constant.CACHE_REQUEST_BODY_OBJECT_KEY);
         String body = readBody(cachedBody);
         log.info("[txId]: {} microService is: {}, url is: {}, params is: {}", txId, path.split("/")[1], path, body);
@@ -64,7 +63,9 @@ public class AuthGatewayFilter implements GlobalFilter, Ordered {
         // 用户校验 和存当前用户的信息
         CurrentUserBO currentUserBO;
         //白名单放行
+
         if (AuthConfig.getPassOperations().contains(path)) {
+
             if(path.endsWith(Constant.LOGIN) || path.endsWith(Constant.LOGOUT)){
                 return gatewayFilterChain.filter(serverWebExchange);
             }
